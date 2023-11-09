@@ -1,0 +1,87 @@
+{% extends 'bootstrap/base.html' %}
+{% block titile %}
+    {% if title %}
+        <title>{{ title }} - Microblog</title>
+    {% else %}
+        <title>Welcome to Microblog</title>
+    {% endif %}
+{% endblock %}
+
+        <div>
+            Microblog:
+            <a href="{{ url_for('main.index') }}">Home</a>
+            {% if current_user.is_anonymous %}
+            <a href="{{ url_for('auth.login') }}">Login</a>
+            {% else %}
+            <a href="{{ url_for('main.user', username=current_user.username) }}">Profile</a>
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+            <a href="{{ url_for('main.explore') }}">Explore</a>
+            {% endif %}
+        </div>
+        <hr>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+        {% block content %}
+
+        {% endblock %}
+
+        {% block scripts %}
+                <script language="JavaScript" type="text/javascript" src="https://code.jquery.com/jquery-3.6.3.js"></script>
+                <script>
+                console.log('all')
+                 $(function () {
+            var timer = null;
+            var xhr = null;
+            $('.user_popup').hover(
+                function(event) {
+                    // mouse in event handler
+                    var elem = $(event.currentTarget);
+                    timer = setTimeout(function() {
+                        timer = null;
+                        xhr = $.ajax(
+                            '/user/' + elem.first().text().trim() + '/popup').done(
+                                function(data) {
+                                    xhr = null;
+                                    elem.popover({
+                                        trigger: 'manual',
+                                        html: true,
+                                        animation: false,
+                                        container: elem,
+                                        content: data
+                                    }).popover('show');
+                                    flask_moment_render_all();
+                                }
+                            );
+                    }, 1000);
+                },
+                function(event) {
+                    // mouse out event handler
+                    var elem = $(event.currentTarget);
+                    if (timer) {
+                        clearTimeout(timer);
+                        timer = null;
+                    }
+                    else if (xhr) {
+                        xhr.abort();
+                        xhr = null;
+                    }
+                    else {
+                        elem.popover('destroy');
+                    }
+                }
+            );
+        });
+            </script>
+{{ moment.include_moment() }}
+                {{ moment.lang(g.locale) }}
+        {% endblock %}
+
+
+
